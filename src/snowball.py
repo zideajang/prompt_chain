@@ -25,10 +25,10 @@ def write_blog(base_info):
     console.print(":robot:")
     console.print(snowball_response_1)
 
-    console.print(":robot:"*2)
+    console.print(":robot:")
     console.print(snowball_response_2)
 
-    console.print(":robot:"*3)
+    console.print(":robot:")
     console.print(snowball_response_3)
 
     snowball_markdown_prompt = f"Generate a markdown formatted blog post given this information: '{snowball_response_3}'. Respond in JSON format {{markdown_blog: '<entire markdown blog post>'}}"
