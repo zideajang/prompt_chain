@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from llm import ChatMessageModel
 from message import Message,SystemMessage,HumanMessage,AIMessage,Messages
 from prompt import AIMessagePromptTemplate,HumanMessagePromptTemplate
+from tool import PrintJsonTool,PrintMarkdownTool
 
 class Runnable(Protocol):
     async def invoke(self,messages:Messages)->Message:
@@ -19,10 +20,12 @@ class Runnable(Protocol):
 @dataclass
 class ChainProcessor:
     chain_list:list[Runnable] 
+    is_sequence:bool
     messages:Message
 
     def __init__(self,messages:Message):
         self.chain_list = []
+        self.is_sequence = False
         self.messages = messages
 
     def __or__(self, runnable: Runnable):
@@ -31,8 +34,13 @@ class ChainProcessor:
 
     async def invoke(self):
         for runnable in self.chain_list:
-            rsp = await runnable.invoke(self.messages)
-            self.messages.add_message(rsp)
+            if(self.is_sequence):
+                messages = self.messages[-1]
+            else:
+                messages = self.messages
+            rsp = await runnable.invoke(messages)
+            if rsp is not None:
+                self.messages.add_message(rsp)
 
 async def main():
     system_message = SystemMessage(content="you are linux system")
@@ -43,8 +51,10 @@ async def main():
     model = ChatMessageModel("llama3")
     
     chain = ChainProcessor(Messages(messages=[system_message]))
+
+    print_markdown_tool = PrintMarkdownTool(name="print markdown",description="print markdown")
     
-    chain | assistant_message | humam_message | model
+    chain | assistant_message | humam_message | model |print_markdown_tool
     await chain.invoke()
     print(chain.messages)
 

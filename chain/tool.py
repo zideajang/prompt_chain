@@ -1,26 +1,48 @@
-# import ollama
 from typing import Protocol,List
-import functools
+from abc import ABC
+from message import Messages,Message
 
+from rich.console import Console
+from rich.markdown import Markdown
+from tiktoken._educational import *
+console = Console()
 
-class BaseMessags:
-    pass
+class Tool(ABC):
+    def __init__(self,name,description) -> None:
+        self.name = name
+        self.description = description
+    async def invoke(self,messages:Messages)->Message:
+        ...
 
-class LLMResponse:
-    pass
+class CalcTokenTool(Tool):
 
-class LLMFunction:
-    pass
+    def __init__(self, name, description) -> None:
+        super().__init__(name, description)
+        self.enc = SimpleBytePairEncoding.from_tiktoken("cl100k_base")
 
-class BaseLLM(Protocol):
-    def invoke(self,prompt:str)->LLMResponse:
-        pass
+    async def invoke(self,messages:Messages)->Message:
+        total_content = ""
+        for message in messages:
+            total_content += message.content
 
-    def ainvoke(self,prompt:str)->LLMResponse:
-        pass
+        print(self.enc.encode(total_content))
 
-    def stream(self,prompt:str)->LLMResponse:
-        pass
+class PrintMarkdownTool(Tool):
 
-    def bind_functions(self,functions:List[LLMFunction]):
-        pass
+    async def invoke(self,messages:Messages)->Message:
+        message = messages.messages[-1]
+        if isinstance(message,Message):
+            console.print(Markdown(message.content))
+        else:
+            console.print(message.content)
+        return None
+
+class PrintJsonTool(Tool):
+    
+    async def invoke(self,messages:Messages)->Message:
+        message = messages.messages[-1]
+        if isinstance(message,Message):
+            console.print_json(message.json())
+        else:
+            console.print(message.content)
+        return None

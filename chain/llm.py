@@ -1,8 +1,8 @@
 
 import inspect
-
+import asyncio
 import ollama
-
+from ollama import AsyncClient
 from rich.console import Console
 from message import Message,Messages,AIMessage
 console = Console()
@@ -39,16 +39,21 @@ def build_chat_model(model_name:str):
         return invoke
     return intial_system
 
+
+
+
 class ChatMessageModel:
 
     def __init__(self,model_name) -> None:
         self.model_name = model_name
 
     async def invoke(self,messages:Messages):
+        console.print(messages.model_dump()['messages'])
         response = ollama.chat(
             model=self.model_name,
             messages=messages.model_dump()['messages']
         )
+
         return  AIMessage(content=response['message']['content']) 
 
 
