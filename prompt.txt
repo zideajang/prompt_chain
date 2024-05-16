@@ -1,0 +1,26 @@
+```python
+from abc import ABC,abstractmethod
+from types import UnionType
+from typing import Any,Protocol
+
+from message import Message,SystemMessage
+class Runnable(Protocol):
+    def invoke(self,messages:list[Message])->Message:
+        ...
+    
+
+
+class ChainProcessor:
+    def __init__(self,system_message:SystemMessage) -> None:
+        self.chain_list:list[Runnable] = []
+        self.messges:list[Message] = [system_message]
+
+    def __or__(self, runnable: Runnable) -> UnionType:
+        self.chain_list.append(runnable)
+
+    def invoke(self):
+        for runnable in self.chain_list:
+            runnable.invoke(self.messges)
+
+```
+这里 chain_list 做出一个 generator 所有 Runnable 可能是异步，希望等待异步执行完毕返回值
