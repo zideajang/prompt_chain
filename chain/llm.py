@@ -5,7 +5,9 @@ import ollama
 from ollama import AsyncClient
 from rich.console import Console
 from message import Message,Messages,AIMessage
+
 console = Console()
+from rich.markdown import Markdown
 
 def build_model(model):
     def invoke(prompt):
@@ -60,7 +62,7 @@ class ChatMessageModel:
 
 if __name__ == "__main__":
     response = build_model("llama3")("write read csv file in python")
-    print(response)
+    console.print(Markdown(response))
 
     response = build_chat_model("llama3")("you are linux operating system")("ls command")
-    console.print(response)
+    console.print(Markdown(response))

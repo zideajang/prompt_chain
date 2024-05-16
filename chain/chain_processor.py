@@ -54,7 +54,8 @@ async def main():
 
     print_markdown_tool = PrintMarkdownTool(name="print markdown",description="print markdown")
     
-    chain | assistant_message | humam_message | model |print_markdown_tool
+    # task [task agent[prompt | model | response] | agent[prompt | model | respone] outputcheck(target fn)-> task
+    chain | assistant_message | humam_message | model | print_markdown_tool
     await chain.invoke()
     print(chain.messages)
 

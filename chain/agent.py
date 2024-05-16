@@ -4,6 +4,9 @@ from llm import ChatMessageModel
 from message import SystemMessage
 from chain_processor import ChainProcessor
 
+from memory import BaseMemory
+from event import 
+
 default_system_message = SystemMessage
 
 DEFAULT_SYSTEM_MESSAGE = """You are a helpful AI assistant.
@@ -27,9 +30,12 @@ class Agent(ABC):
             name:str,
             llm:ChatMessageModel,
             is_termination_msg:Optional[Callable],
+            memory:BaseMemory,#应该是一个接口，memoryclient
             system_message:SystemMessage) -> None:
         self.llm = llm
         self.system = SystemMessage
+
+
 class ConversationAgent(Agent):
     pass
 
