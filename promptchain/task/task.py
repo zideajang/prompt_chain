@@ -9,6 +9,14 @@ from promptchain.llm import ChatMessageModel,build_chat_model
 from promptchain.message import SystemMessage,Message,AIMessage
 from promptchain.memory.memory import BaseMemory
 
+
+"""
+TODO
+- 在 task 中 agent 的工作协调应该如何解决
+- task , langgraph
+- 在 task 中，首先设定有一个目标(description)
+"""
+
 console = Console()
 
 class Task(ABC):
@@ -84,7 +92,8 @@ if __name__ == "__main__":
 
     user_proxy_agent = UserProxyAgent(name="test_agent 🚀",
                                       llm=build_chat_model,
-                                      is_termination_msg=termination_msg,
+                                      model_name="llama3",
+                                      is_termination_fn=termination_msg,
                                       memory=BaseMemory("test_agent_memory"),
                                       system_message=system_message)
 

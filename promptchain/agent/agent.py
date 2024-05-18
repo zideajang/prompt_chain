@@ -11,6 +11,8 @@ from promptchain.message import SystemMessage,Message,AIMessage
 from promptchain.chain_processor import ChainProcessor
 from promptchain.memory.memory import BaseMemory
 
+from promptchain.memory.persistence_manager import LocalStateManager
+
 console = Console()
 
 default_system_message = SystemMessage
@@ -35,7 +37,8 @@ class Agent(ABC):
     def __init__(self,
             name:str,
             llm, 
-            is_termination_ms,
+            model_name:str,
+            is_termination_fn,
             memory:BaseMemory,#应该是一个接口，memoryclient
             system_message:SystemMessage) -> None:
         pass
@@ -51,12 +54,16 @@ class UserProxyAgent(Agent):
     def __init__(self, 
                     name: str, 
                     llm, 
-                    is_termination_msg, 
+                    model_name:str,
+                    is_termination_fn, 
                     memory: BaseMemory, 
                     system_message: SystemMessage) -> None:
-        super().__init__(name, llm, is_termination_msg, memory, system_message)
-        self.llm = build_chat_model("llama3")(system_message.content)
-        self.is_termination_msg = is_termination_msg
+        super().__init__(name, llm,model_name, is_termination_fn, memory, system_message)
+        self.llm = build_chat_model(model_name)(system_message.content)
+        self.is_termination_fn = is_termination_fn
+
+
+        self.persistence_manager = LocalStateManager(agent_state=None)
 
     async def query(self,message:Message):
         rsp = await self.llm(message.content)
@@ -65,7 +72,7 @@ class UserProxyAgent(Agent):
         console.print("-"*50)
         human_input = Prompt.ask("Enter your suggest if input exit and quit()")
         
-        if self.is_termination_msg(human_input):
+        if self.is_termination_fn(human_input):
             return (rsp,True)
 
         return (f"{{'previous prompt':'{rsp}','suggest':'{human_input}' }}, respone format in JSON",False)
@@ -78,11 +85,16 @@ class UserProxyAgent(Agent):
 if __name__ == "__main__":
     system_message = SystemMessage(content="you are very help assistant")
     ai_message = AIMessage(content="help write hello world in python")
+    
     def termination_msg(message:str):
-        return True
+        if message == "\exit":
+            return True
+        return False
+    
     user_proxy_agent = UserProxyAgent(name="test_agent 🚀",
                                       llm=build_chat_model,
-                                      is_termination_msg=termination_msg,
+                                      model_name="llama",
+                                      is_termination_fn=termination_msg,
                                       memory=BaseMemory("test_agent_memory"),
                                       system_message=system_message)
 

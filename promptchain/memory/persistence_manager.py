@@ -7,10 +7,17 @@ class PersistenceManager(ABC):
     def trim_messages(self, num):
         pass
 
+    @abstractmethod
+    def prepend_to_messages(self,added_messages):
+        pass
+    @abstractmethod
+    def append_to_messages(self,added_messages):
+        pass
 
-class InMemoryStateManager(PersistenceManager):
 
-    def __init__(self) -> None:
+class LocalStateManager(PersistenceManager):
+
+    def __init__(self,agent_state) -> None:
         self.memory = None
-        self.messages = []
-        self.all_messages = []
+        self.archival_memory = []
+        self.recall_memory = []

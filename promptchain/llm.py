@@ -8,6 +8,8 @@ from rich.console import Console
 
 from promptchain.message import Message,Messages,AIMessage
 
+from promptchain.constants import INITIAL_BOOT_MESSAGE
+
 console = Console()
 from rich.markdown import Markdown
 
@@ -22,6 +24,40 @@ def build_model(model):
         )
         return response['message']['content']
     return invoke
+
+
+def build_embedding_model(model_name:str):
+    def invoke(prompt_str:str):
+        response = ollama.embeddings(model=model_name, prompt=prompt_str)
+        return response["embedding"]
+    
+    return invoke
+
+def build_chat_message_model(model_name:str):
+    def intial_system(system_content:str):
+        def intial_assistent(asistent_content:str):
+            def invoke(prompt_str:str):
+                response =  ollama.chat(
+                    model=model_name,
+                    messages=[
+                        {
+                            "role":"system",
+                            "content":system_content
+                        },
+                         {
+                            "role":"assistant",
+                            "content":asistent_content
+                        },
+                        {
+                            "role":"user",
+                            "content":prompt_str
+                        }]
+                )
+                return response['message']['content']
+            
+            return invoke
+        return intial_assistent
+    return intial_system
 
 
 def build_chat_model(model_name:str):
@@ -66,8 +102,15 @@ class ChatMessageModel:
 
 
 if __name__ == "__main__":
-    response = build_model("llama3")("write read csv file in python")
-    console.print(Markdown(response))
+    
+    response = build_chat_message_model("llama3")(INITIAL_BOOT_MESSAGE)("You are a helpful AI assistant.Solve tasks using your coding and language skills.")("write hello world in java")
+    
+    console.print(response)
 
-    response = build_chat_model("llama3")("you are linux operating system")("ls command")
-    console.print(Markdown(response))
+    # response = build_model("llama3")("write read csv file in python")
+    # console.print(Markdown(response))
+
+    # response = build_chat_model("llama3")("you are linux operating system")("ls command")
+    # console.print(Markdown(response))
+
+
