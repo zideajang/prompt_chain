@@ -1,6 +1,6 @@
 # prompt chain
 
-
+prompt chain 的设计初衷是构建在 tiny graph 上解决方案
 ## 目标
 是一个轻量级的 prompt chain，面向个人的 agent 框架，prompt chain 是 tinychain 的前身，主要目的用于探索 agent 实现路线 
 这个prompt chain 框架目标是典型函数式编程的范例
